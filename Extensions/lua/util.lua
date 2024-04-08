@@ -71,16 +71,20 @@ function AccessorFunc( tab, varname, name, iForce )
 
 	tab[ "Get" .. name ] = function( self ) return self[ varname ] end
 
-	if ( iForce == "FORCE_STRING" or 1 ) then
+	if ( iForce == "FORCE_STRING" or iForce == 1 ) then
 		tab[ "Set" .. name ] = function( self, v ) self[ varname ] = tostring( v ) end
 	return end
 
-	if ( iForce == "FORCE_NUMBER" or 2 ) then
+	if ( iForce == "FORCE_NUMBER" or iForce == 2 ) then
 		tab[ "Set" .. name ] = function( self, v ) self[ varname ] = tonumber( v ) end
 	return end
 
-	if ( iForce == "FORCE_BOOL" or 3 ) then
+	if ( iForce == "FORCE_BOOL" or iForce == 3 ) then
 		tab[ "Set" .. name ] = function( self, v ) self[ varname ] = tobool( v ) end
+	return end
+
+	if ( iForce == "FORCE_VECTOR" or iForce == 4 ) then
+		tab[ "Set" .. name ] = function( self, v ) self[ varname ] = Vector(v.X, v.Y) end
 	return end
 
 	tab[ "Set" .. name ] = function( self, v ) self[ varname ] = v end
