@@ -20,7 +20,7 @@ local function verify(v)if v[2]then return v.onSuccess(v[1])end;return v.onError
 local function basefile(p,oS,oE)local fe={p,LuaMan:FileExists(p)}fe.onSuccess=function(f)if oS then oS(f)end;end;fe.onError=function(f)if oE then oE(f)end;end;verify(fe)end
 
 --Go Through Directories
-local function basedir(rte,dir)for f in LuaMan:GetFileList(dir)do if string.find(f,".lua")then basefile(dir..f,function(dir)if dir then require(dir:gsub("Data/"..rte.."/",""):gsub("%.lua$",""))end end)end end;for d in LuaMan:GetDirectoryList(dir)do if d~=""then basedir(rte,dir..d.."/")end end end
+local function basedir(dir)for f in LuaMan:GetFileList(dir)do if string.find(f,".lua")then basefile(dir..f,function(dir)if dir then require(dir:gsub("Mods/Extensions/",""):gsub("%.lua$",""))end end)end end;for d in LuaMan:GetDirectoryList(dir)do if d~=""then basedir(dir..d.."/")end end end
 
 --Start Extension Process
-local function base_ext(rte,dir)basedir(rte,"Data/"..rte.."/"..dir)end;base_ext("Base.rte","Extensions/lua/")
+local function base_ext(dir)basedir("Mods/Extensions/"..dir)end;base_ext("lua/")
