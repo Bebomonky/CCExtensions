@@ -421,28 +421,6 @@ function igui.Label()
 	return label
 end
 
---[[---------------------------------------------------------
-	Name: RemoveChild(parent_child, child_name )
-	Desc: Look for children that doesn't have this name and remove it
------------------------------------------------------------]]
-function igui.RemoveChild(parent_child, child_name)
-	if type(child_name) == "string" then
-		for i, child in pairs(parent_child) do
-			if child.Name == child_name then
-				parent_child[i] = nil
-			end
-		end
-		return
-	end
-	for i, child in pairs(parent_child) do
-		for j, name in pairs(child_name) do
-			if child.Name == name then
-				parent_child[i] = nil
-			end
-		end
-	end
-end
-
 -- PRIVATE FUNCTIONS -----------------------------------------------------------
 
 function cursor_inside(el_pos, size)
