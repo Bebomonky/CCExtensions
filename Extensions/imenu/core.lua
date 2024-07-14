@@ -1,23 +1,69 @@
 local imenu = {}
+local core_func = require("Mods.Extensions.imenu.gui.imenu_Base")
 
 function imenu:Create()
 	local members = {}
-	setmetatable(members, self)
 
+	setmetatable(members, self)
 	self.__index = self
 
 	return members
 end
 
--- PUBLIC FUNCTIONS ------------------------------------------------------------
+local panelFactory = {}
+for files in LuaMan:GetFileList("Mods/Extensions/imenu/gui/") do
+	local file = files:gsub("imenu_", "" ):gsub("%.lua$", "")
+	if file ~= "Base" then
+		panelFactory[file] = require("Mods.Extensions.imenu.gui." .. files:gsub("%.lua$", ""))
+	end
+end
+
+function imenu:CreateGUI(control_ID, parent, name)
+	if panelFactory[control_ID] then
+		local panel = table.Copy(panelFactory[control_ID])
+		panel:Initialize()
+
+		--Copy functions from core_func first
+		for k, v in pairs(core_func) do
+			panel[k] = v
+		end
+
+		--Pre setup
+		local activity = ActivityMan:GetActivity()
+		panel:SetController(activity:GetPlayerController(self.Player))
+		panel:SetScreen(activity:ScreenOfPlayer(self.Player))
+
+		if name ~= nil and type(name) == "string" then
+			panel:SetName(name)
+		end
+		if parent ~= nil and type(parent) == "table" then
+			panel:SetParent(parent)
+		end
+
+		if ExtensionMan.EnableDebugPrinting then
+			local msg = "Successfully created panel,"
+			.. " control_ID: " .. control_ID
+			.. " name: " .. panel._name
+			.. " parent: " .. parent ~= nil and "Yes" or "No"
+			if parent ~= nil then
+				msg = msg .. " parent control_ID: " .. parent._controlType
+			end
+			ExtensionMan.print_debug(msg)
+		end
+		return panel
+	end
+
+	ExtensionMan.print_warn(control_ID .. " is an invalid controlType")
+	return nil
+end
 
 function imenu:Initialize()
 	local act = ActivityMan:GetActivity()
-	if act == nil then ConsoleMan:PrintString("A activity is required to be running in order to setup menu!"  .. "Warning! \xD5 ") return end
+	if act == nil then ExtensionMan.print_notice("Warning!", "A activity is required to be running in order to setup menu!") return end
 
 	-- Don't change these
 	self.Activity = act
-	self.GameActivity = ToGameActivity(self.Activity)
+	self.GameActivity = ToGameActivity(act)
 	self.Open = false --If you want your menu to be automatically opened, do it in a update function, check if it's being controlled
 	self.Close = true --It's closed by default
 	self.Cursor_Bitmap = "Data/Base.rte/GUIs/Skins/Cursor.png"
@@ -26,37 +72,24 @@ function imenu:Initialize()
 	self.EntityCurrentlyControlled = false
 	self.OneInstance = false
 	self.KeepMenuOpen = false
-	self.Player = nil
-	self.Actor = nil
-	self.Controller = nil
-end
 
-function imenu:Clear()
-	self.GameActivity:LockControlledActor(self.Player, false, Controller.CIM_DISABLED)
-	self.Actor = nil
-	self.Player = nil
+	self.Player = -1
 	self.Controller = nil
-	self.Open = false
-	self.Close = true
+	self.EnterMenuTimer = Timer()
 end
 
 --[[---------------------------------------------------------
 	Name: New( entity, func )
-	Desc: When the entity wants to send a message
-		It's best to call this one at a time or use ForceOpen (though the menu will be opened automatically!)
-	Note: You can use this on anything that can retrieve Messages. (unless forcefully blacklisted)
+	Desc: Open a new menu everytime, or use a instance
 -----------------------------------------------------------]]
 function imenu:New(entity, func)
 	if not entity then return "The entity does not exist" end
 	if not entity.PlayerControllable then return "The entity cannot be controlled" end
 
-	if self.Player == nil then
-		local ctrl = entity:GetController()
-		self.Actor = entity
-		self.Player = ctrl.Player
-		self.Controller = self.Activity:GetPlayerController(ctrl.Player)
-	end
-
+	local ctrl = entity:GetController()
+	self.Player = ctrl.Player
+	self.Controller = self.Activity:GetPlayerController(ctrl.Player)
+	self.Screen = self.Activity:ScreenOfPlayer(ctrl.Player)
 	self.Mouse = UInputMan:GetMousePos() / FrameMan.ResolutionMultiplier
 
 	self:SetDrawPos(Vector(entity.Pos.X, entity.Pos.Y))
@@ -67,6 +100,8 @@ function imenu:New(entity, func)
 		end
 	end
 
+	self.EnterMenuTimer:Reset()
+
 	if not self.Open then
 		func(entity)
 	end
@@ -74,10 +109,6 @@ function imenu:New(entity, func)
 	self.Close = false
 	self.Open = not self.Open
 
-	--Since the player is stored, it will fix it right back so we don't get stuck :D
-	if self.Player ~= nil then
-		self.GameActivity:LockControlledActor(self.Player, self.Open, Controller.CIM_DISABLED)
-	end
 	return true
 end
 
@@ -105,34 +136,10 @@ function imenu:SwitchState()
 end
 
 --[[---------------------------------------------------------
-	Name: shouldDisplay( self, entity )
+	Name: shouldDisplay()
 	Desc: true or false statements on should the menu be displayed
 -----------------------------------------------------------]]
 function imenu:shouldDisplay(entity)
-	--[[
-	if self.ForceOpen then
-		--Just to be sure, we don't want to cursor to still exist if we don't control it
-		if entity.Health <= 0 or not entity:IsPlayerControlled() then self.Cursor = nil; end
-		return true
-	end
-	if self.Close == true then self:Remove() return false end
-	if self.Open == false then self:Remove() return false end
-
-	return true
-	]]
-
-	if self.Actor and self.Actor.Health <= 0 then return false end
-
-	if self.ForceOpen then
-		--Just to be sure, we don't want to cursor to still exist if we don't control it
-		if not (self.Actor or MovableMan:ValidMO(self.Actor)) then self.Cursor = nil; end
-		return false
-	end
-
-	if not (self.Actor or MovableMan:ValidMO(self.Actor)) then
-		self:Remove()
-		return false
-	end
 
 	if self.Close == true then self:Remove() return false end
 	if self.Open == false then self:Remove() return false end
@@ -147,37 +154,14 @@ end
 function imenu:Update(entity)
 	if not self:shouldDisplay(entity) then return false end
 
-	if self.Player then
-		local screen = self.Activity:ScreenOfPlayer(self.Player)
-		local screen_offset = CameraMan:GetOffset(screen)
-		if self.Controller:IsMouseControlled() then
-			self.Mouse = UInputMan:GetMousePos() / FrameMan.ResolutionMultiplier
-		else
-			if self.Controller:IsState(Controller.MOVE_LEFT) then
-				self.Mouse = self.Mouse + Vector(-5, 0)
-			end
-	
-			if self.Controller:IsState(Controller.MOVE_RIGHT) then
-				self.Mouse = self.Mouse + Vector(5, 0)
-			end
-	
-			if self.Controller:IsState(Controller.MOVE_UP) then
-				self.Mouse = self.Mouse + Vector(0, -5)
-			end
-	
-			if self.Controller:IsState(Controller.MOVE_DOWN) then
-				self.Mouse = self.Mouse + Vector(0, 5)
-			end
-		end
+	cursor(self)
 
-		--Cursor creation, update
-		self.Cursor = screen_offset + self.Mouse
-	end
-
-	for _, input in pairs({Controller.SECONDARY_ACTION, Controller.ACTOR_NEXT_PREP, Controller.ACTOR_PREV_PREP}) do
-		if self.Controller:IsState(input) then
-			self:Clear()
-			break
+	if self.EnterMenuTimer:IsPastSimMS(50) then
+		for _, input in pairs({Controller.SECONDARY_ACTION, Controller.ACTOR_NEXT_PREP, Controller.ACTOR_PREV_PREP}) do
+			if self.Controller:IsState(input) then
+				self:Remove()
+				break
+			end
 		end
 	end
 
@@ -186,18 +170,8 @@ function imenu:Update(entity)
 	return true
 end
 
-function imenu:GetScreen()
-	if self.Player == nil then return nil end
-	return self.Activity:ScreenOfPlayer(self.Player)
-end
-
 function imenu:DrawCursor(screen)
-	if self.Cursor == nil then return end
-	if screen == nil then return end
-	PrimitiveMan:DrawBitmapPrimitive(screen,
-	self.Cursor + Vector(5, 5),
-	self.Cursor_Bitmap,
-	0)
+	PrimitiveMan:DrawBitmapPrimitive(self.Screen, self.Cursor + Vector(5, 5), self.Cursor_Bitmap, 0)
 end
 
 --[[---------------------------------------------------------
@@ -206,17 +180,23 @@ end
 		We set certain values regardless, because we are removing it!
 -----------------------------------------------------------]]
 function imenu:Remove()
-	if not self.Cursor then return end
-	if self.ForceOpen then
-		self.Cursor = nil
-		return
-	end
+	if self.Close == true then return end
 	self.Open = false
 	self.Close = true
-	self.Cursor = nil
 end
 
--- PRIVATE FUNCTIONS -----------------------------------------------------------
+function imenu:cursor_inside(el_pos, size)
+	local el_x = el_pos.X
+	local el_y = el_pos.Y
+
+	local el_width = size.X
+	local el_height = size.Y
+
+	local mouse_x = self.Cursor.X
+	local mouse_y = self.Cursor.Y
+
+	return (mouse_x > el_x) and (mouse_x < el_x + el_width) and (mouse_y > el_y) and (mouse_y < el_y + el_height)
+end
 
 --[[---------------------------------------------------------
 	Name: instance( entity, func, oneInstance, isOpen, stayedOpen )
@@ -258,6 +238,29 @@ function camera(drawPos, entity)
 	end
 end
 
--- MODULE END ------------------------------------------------------------------
+function cursor(self)
+	local screen_offset = CameraMan:GetOffset(self.Screen)
+	if self.Controller:IsMouseControlled() then
+		self.Mouse = UInputMan:GetMousePos() / FrameMan.ResolutionMultiplier
+	else
+		if self.Controller:IsState(Controller.MOVE_LEFT) then
+			self.Mouse = self.Mouse + Vector(-5, 0)
+		end
+
+		if self.Controller:IsState(Controller.MOVE_RIGHT) then
+			self.Mouse = self.Mouse + Vector(5, 0)
+		end
+
+		if self.Controller:IsState(Controller.MOVE_UP) then
+			self.Mouse = self.Mouse + Vector(0, -5)
+		end
+
+		if self.Controller:IsState(Controller.MOVE_DOWN) then
+			self.Mouse = self.Mouse + Vector(0, 5)
+		end
+	end
+
+	self.Cursor = screen_offset + self.Mouse
+end
 
 return imenu:Create()
