@@ -5,6 +5,7 @@ function PANEL:Initialize()
 	self._children = {}
 	self._name = ""
 	self._text = ""
+	self._textAlignment = 0
     self._color = 146
 	self._parent = nil
 	self._visible = true
@@ -25,6 +26,10 @@ function PANEL:GetText()
 	return self._text
 end
 
+function PANEL:SetContentAlignment(num)
+	self._textAlignment = num
+end
+
 function PANEL:Update(entity)
 	if not self._visible then return end
 	if not table.IsEmpty(self._children) then
@@ -40,8 +45,10 @@ function PANEL:Update(entity)
 	pos.Y = self._parent and (self._parent._y + self._y) or self._y
 	local size = Vector(self._w, self._h)
 	local world_pos = pos + CameraMan:GetOffset(self._screen)
+	local text_pos = world_pos
+	if self._textAlignment == 1 then text_pos = text_pos + size / 2 end
 
-    PrimitiveMan:DrawTextPrimitive(self._screen, world_pos, self._text, self._smallText, 0)
+	PrimitiveMan:DrawTextPrimitive(self._screen, text_pos, self._text, self._smallText, self._textAlignment or 0)
 
     if (self.Think) then
         self.Think(entity, self._screen)

@@ -71,6 +71,10 @@ function PANEL:TextPos(x, y)
 	self._textPos.X, self._textPos.Y = x, y
 end
 
+function PANEL:SetContentAlignment(num)
+	self._textAlignment = num
+end
+
 function PANEL:Update(entity, ...)
 	if not self._visible then return end
 
