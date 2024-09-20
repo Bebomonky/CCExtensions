@@ -94,7 +94,7 @@ function BASE:Remove()
 	if not self._parent then
 		return
 	end
-	local children = self._parent.children
+	local children = self._parent._children
 	if not table.IsEmpty(children) then
 		for k, v in ipairs(children) do
 			if v == self then

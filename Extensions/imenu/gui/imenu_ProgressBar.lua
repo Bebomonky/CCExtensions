@@ -18,10 +18,10 @@ function PANEL:Initialize()
 	self._screen = -1
 	self._smallText = true
 	self._drawAfterParent = true
-	self.x = 0
-	self.y = 0
-	self.w = 80
-	self.h = 50
+	self._x = 0
+	self._y = 0
+	self._w = 80
+	self._h = 50
 
     min = 0
     completed = false
