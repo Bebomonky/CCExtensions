@@ -18,6 +18,7 @@ function PANEL:Initialize()
 	self._screen = -1
 	self._smallText = true
 	self._drawAfterParent = true
+	self._divided = false
 	self._x = 0
 	self._y = 0
 	self._w = 80
@@ -63,6 +64,14 @@ function PANEL:GetFraction()
 	return min
 end
 
+function PANEL:DividedFromMenu(bool)
+	self._divided = bool
+end
+
+function PANEL:IsDivided()
+	return self._divided
+end
+
 function PANEL:Update(entity, ...)
 	if not self._visible then return end
 	if not table.IsEmpty(self._children) then
@@ -77,7 +86,12 @@ function PANEL:Update(entity, ...)
 	pos.X = self._parent and (self._parent._x + self._x) or self._x
 	pos.Y = self._parent and (self._parent._y + self._y) or self._y
 	local size = Vector(self._w, self._h)
-	local world_pos = pos + CameraMan:GetOffset(self._screen)
+	local world_pos
+	if self._divided == true then
+		world_pos = pos
+	else
+		world_pos = pos + CameraMan:GetOffset(self._screen)
+	end
 	local text_pos = world_pos
     local factor = math.min(min, max)
     local bottomRightPos = world_pos + size + Vector(0, 0.5)
