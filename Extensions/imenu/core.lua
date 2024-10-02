@@ -232,6 +232,7 @@ function camera(drawPos, entity)
 	local states = {
 		Controller.MOVE_UP, Controller.MOVE_DOWN, Controller.BODY_JUMPSTART, Controller.BODY_JUMP, Controller.BODY_CROUCH, Controller.MOVE_LEFT, Controller.MOVE_RIGHT,
 		Controller.MOVE_IDLE, Controller.MOVE_FAST, Controller.AIM_UP, Controller.AIM_DOWN, Controller.AIM_SHARP, Controller.WEAPON_FIRE, Controller.WEAPON_RELOAD,
+		Controller.WEAPON_CHANGE_NEXT, Controller.WEAPON_CHANGE_PREV
 	}
 	for _, input in ipairs(states) do
 		ctrl:SetState(input, false)
