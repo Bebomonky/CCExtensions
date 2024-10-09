@@ -76,6 +76,7 @@ function imenu:Initialize()
 	self.Player = -1
 	self.Controller = nil
 	self.EnterMenuTimer = Timer()
+	self.Mouse = UInputMan:GetMousePos() / FrameMan.ResolutionMultiplier
 end
 
 --[[---------------------------------------------------------
@@ -171,7 +172,7 @@ function imenu:Update(entity)
 end
 
 function imenu:DrawCursor(screen)
-	PrimitiveMan:DrawBitmapPrimitive(self.Screen, self.Cursor + Vector(5, 5), self.Cursor_Bitmap, 0)
+	PrimitiveMan:DrawBitmapPrimitive(screen, self.Cursor + Vector(5, 5), self.Cursor_Bitmap, 0)
 end
 
 --[[---------------------------------------------------------
