@@ -1,9 +1,9 @@
-_G["ExtensionMan"] = {}
-ExtensionMan.EnableDebugPrinting = false
+ExtensionMan = {};
+ExtensionMan.EnableDebugPrinting = false;
 
-local mod_PREFIX = "[EXTENSIONMAN] "
-local warn_PREFIX = mod_PREFIX .. "[WARN] "
-local notice_PREFIX = " \xD5 "
+local mod_PREFIX = "[EXTENSIONMAN] ";
+local warn_PREFIX = mod_PREFIX .. "[WARN] ";
+local notice_PREFIX = " \xD5 ";
 function ExtensionMan.print_debug(...)if ExtensionMan.EnableDebugPrinting then ConsoleMan:PrintString(...)end end
 function ExtensionMan.print_success(...)ConsoleMan:PrintString(... .. " \xD6")end
 function ExtensionMan.print_done(...)ConsoleMan:PrintString(... .. " - done! \xD6")end
