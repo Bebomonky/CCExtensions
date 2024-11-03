@@ -11,6 +11,7 @@ function BASE:Create()
 	self._outlineColor = 71;
 	self._outlineThickness = 2;
 	self._drawAfterParent = true;
+	self._hide = false;
 	self._x = 0;
 	self._y = 0;
 	self._w = 80;
@@ -128,6 +129,10 @@ function BASE:OutlineThickness(num)
 	self._outlineThickness = num;
 end
 
+function BASE:Hide(bool)
+	self._hide = bool;
+end
+
 function BASE:Remove()
 	if not self._parent then
 		return;
@@ -167,15 +172,16 @@ function BASE:Update()
 
 	local world_pos = self:GetPos();
 
-	local thickness = self._outlineThickness;
-	if thickness ~= 0 then
-		PrimitiveMan:DrawBoxFillPrimitive(self._screen,
-		world_pos - Vector(thickness, thickness),
-		world_pos + self:GetSize() + Vector(thickness, thickness),
-		self._outlineColor);
+	if not self._hide then
+		local thickness = self._outlineThickness;
+		if thickness ~= 0 then
+			PrimitiveMan:DrawBoxFillPrimitive(self._screen,
+			world_pos - Vector(thickness, thickness),
+			world_pos + self:GetSize() + Vector(thickness, thickness),
+			self._outlineColor);
+		end
+		PrimitiveMan:DrawBoxFillPrimitive(self._screen, world_pos, world_pos + self:GetSize(), self._color);
 	end
-
-	PrimitiveMan:DrawBoxFillPrimitive(self._screen, world_pos, world_pos + self:GetSize(), self._color);
 
 	for i = 1, #self._children do
 		local child = self._children[i];

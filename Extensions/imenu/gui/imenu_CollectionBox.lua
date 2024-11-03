@@ -25,7 +25,10 @@ end
 
 function PANEL:NextUpdate()
 	local world_pos = self:GetPos();
-	PrimitiveMan:DrawTextPrimitive(self:GetScreen(), world_pos, tostring(self.title), self.smallText, 0);
+
+	if not self:Hide() then
+		PrimitiveMan:DrawTextPrimitive(self:GetScreen(), world_pos, tostring(self.title), self.smallText, 0);
+	end
 end
 
 return PANEL;
