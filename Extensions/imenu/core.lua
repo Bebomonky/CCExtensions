@@ -91,7 +91,7 @@ function imenu:ToOpen(actor, inputMode)
 	inputMode = inputMode or Controller.CIM_AI
 	local toLock = not self._locked
 
-	local success = self.GameActivity:LockControlledActor(self.Player, not self._locked, inputMode)
+	local success = self.GameActivity:LockControlledActor(self.Player, toLock, inputMode)
 	if not success then
 		ExtensionMan.print_notice("[IMENU] Warning!", "Unable to lock actor")
 		return false
