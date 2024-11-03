@@ -74,42 +74,70 @@ function imenu:Initialize()
 end
 
 --[[---------------------------------------------------------
-	Name: New( entity, func )
-	Desc: Open a new menu everytime, or use a instance
+	Name: ToOpen( actor, lock, inputMode )
+	Desc: returns true if the menu is truely open
+	advised to be with IsOpen() if running instantly
 -----------------------------------------------------------]]
-function imenu:New(entity, func)
-	if not entity then return "The entity does not exist" end
-	if not entity.PlayerControllable then return "The entity cannot be controlled" end
+function imenu:ToOpen(actor, inputMode)
+	self:SetActor(actor)
+	if not self.Actor or not MovableMan:ValidMO(self.Actor) then return false end
+	if not self.Actor.PlayerControllable then return false end
 
-	local ctrl = entity:GetController()
-	self.Player = ctrl.Player
-	self.Controller = self.Activity:GetPlayerController(ctrl.Player)
-	self.Screen = self.Activity:ScreenOfPlayer(ctrl.Player)
-	self.Mouse = UInputMan:GetMousePos() / FrameMan.ResolutionMultiplier
-
-	self:SetDrawPos(Vector(entity.Pos.X, entity.Pos.Y))
-
-	if self.ForceOpen then
-		if self:ResetInstance(entity, self.OneInstance) then
-			return true
-		end
+	local success = self:SetPlayerMenu(self.Actor:GetController().Player)
+	if not success then
+		return false
 	end
 
-	self.EnterMenuTimer:Reset()
+	inputMode = inputMode or Controller.CIM_AI
+	local toLock = not self._locked
 
-	if not self.Open then
-		func(entity)
+	local success = self.GameActivity:LockControlledActor(self.Player, not self._locked, inputMode)
+	if not success then
+		ExtensionMan.print_notice("[IMENU] Warning!", "Unable to lock actor")
+		return false
 	end
 
-	self.Close = false
-	self.Open = not self.Open
+	self._enterMenuTimer:Reset()
 
-	return true
+	self._locked = true
+
+	self:SwitchState()
+
+	return self._open
+end
+
+--[[---------------------------------------------------------
+	Name: SetPlayerMenu()
+	Desc: returns true if valid player and not in odd view states
+-----------------------------------------------------------]]
+function imenu:SetPlayerMenu(player)
+	if player ~= -1 then
+		self.Player = player
+	end
+
+	if (self.Activity:GetViewState(self.Player) ~= Activity.DEATHWATCH and
+	self.Activity:GetViewState(self.Player) ~= Activity.ACTORSELECT and
+	self.Activity:GetViewState(self.Player) ~= Activity.AIGOTOPOINT) then
+		self.Controller = self.Activity:GetPlayerController(self.Player)
+		self.Screen = self.Activity:ScreenOfPlayer(self.Player)
+		return true
+	end
 end
 
 function imenu:SwitchState()
-	self.Open = not self.Open
-	self.Close = not self.Close
+	self._open = not self._open
+end
+
+function imenu:IsOpen()
+	return self._open == true
+end
+
+function imenu:SetActor(entity)
+	self.Actor = entity
+end
+
+function imenu:ValidPlayer()
+	return self.Player ~= -1
 end
 
 --[[---------------------------------------------------------
@@ -133,19 +161,26 @@ function imenu:Update(entity)
 	return true
 end
 
-function imenu:DrawCursor(screen)
-	PrimitiveMan:DrawBitmapPrimitive(screen, self.Cursor + Vector(5, 5), self.Cursor_Bitmap, 0)
+function imenu:DrawCursor()
+	if self.Controller and self.Controller:IsMouseControlled() then
+		PrimitiveMan:DrawBitmapPrimitive(self.Screen, self.Cursor + Vector(5, 5), self.Cursor_Bitmap, 0)
+	end
 end
 
 --[[---------------------------------------------------------
 	Name: Remove()
-	Desc: Removes the menu that is active
-		We set certain values regardless, because we are removing it!
+	Desc: Releases the controlled actor, returns if it was successful or not (ONLY ONCE)
 -----------------------------------------------------------]]
 function imenu:Remove()
-	if self.Close == true then return end
-	self.Open = false
-	self.Close = true
+	if self.Player ~= -1 then
+		if self._locked == true then
+			self.GameActivity:LockControlledActor(self.Player, false, Controller.CIM_PLAYER)
+			self.Controller = nil
+			self.Actor = nil
+			self._open = false
+			self._locked = false
+		end
+	end
 end
 
 return imenu:Create()
