@@ -141,24 +141,49 @@ function imenu:ValidPlayer()
 end
 
 --[[---------------------------------------------------------
-	Name: Update( entity )
-	Desc: Update function requires a entity to be passed, returns if the menu should be updating
+	Name: Update()
+	Desc: returns if the menu should be updating based on various conditions
 -----------------------------------------------------------]]
-function imenu:Update(entity)
-	if not self:shouldDisplay(entity) then return false end
+function imenu:Update()
+	if (self.Player ~= -1 and
+	self.Activity:GetViewState(self.Player) ~= Activity.DEATHWATCH and
+	self.Activity:GetViewState(self.Player) ~= Activity.ACTORSELECT and
+	self.Activity:GetViewState(self.Player) ~= Activity.AIGOTOPOINT) then
 
-	cursor(self)
+		--make sure to remove if nothing qualifys
+		if (not self:IsOpen() or (not self.Controller or not self.Actor or not MovableMan:ValidMO(self.Actor) ) ) then
+			self:Remove()
+			return false
+		end
 
-	if self.EnterMenuTimer:IsPastSimMS(50) then
-		for _, input in pairs({Controller.SECONDARY_ACTION, Controller.ACTOR_NEXT_PREP, Controller.ACTOR_PREV_PREP}) do
-			if self.Controller:IsState(input) then
-				self:Remove()
-				break
+		local states = {
+			Controller.MOVE_UP, Controller.MOVE_DOWN, Controller.BODY_JUMPSTART, Controller.BODY_JUMP, Controller.MOVE_LEFT,
+			Controller.MOVE_RIGHT, Controller.MOVE_FAST, Controller.AIM_UP, Controller.AIM_DOWN, Controller.AIM_SHARP
+		}
+
+		for _, input in ipairs(states) do
+			self.Actor:GetController():SetState(input, false)
+		end
+
+		if self._enterMenuTimer:IsPastSimMS(50) then
+			for _, input in pairs({Controller.PRESS_SECONDARY, Controller.ACTOR_NEXT_PREP, Controller.ACTOR_PREV_PREP}) do
+				if self.Controller:IsState(input) then
+					self:Remove()
+					break
+				end
 			end
 		end
-	end
 
-	return true
+		local offset = CameraMan:GetOffset(self.Player)
+		local mouse = Vector()
+		if self.Controller and self.Controller:IsMouseControlled() then
+			mouse = offset + (UInputMan:GetMousePos() / FrameMan.ResolutionMultiplier)
+		end
+
+		self.Cursor = mouse
+
+		return true
+	end
 end
 
 function imenu:DrawCursor()
