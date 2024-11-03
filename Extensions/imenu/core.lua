@@ -74,7 +74,7 @@ function imenu:Initialize()
 end
 
 --[[---------------------------------------------------------
-	Name: ToOpen( actor, lock, inputMode )
+	Name: ToOpen( actor, inputMode )
 	Desc: returns true if the menu is truely open
 	advised to be with IsOpen() if running instantly
 -----------------------------------------------------------]]
