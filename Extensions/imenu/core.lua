@@ -113,39 +113,9 @@ function imenu:New(entity, func)
 	return true
 end
 
-function imenu:SetDrawPos(pos)
-	self.DrawPos = pos
-end
-
-function imenu:ResetInstance(entity, func, oneInstance)
-	local playerControlled = entity:IsPlayerControlled()
-	if playerControlled then
-		if not self.EntityCurrentlyControlled then
-			self.Open, self.KeepMenuOpen = instance(entity, func, oneInstance, self.Open, self.KeepMenuOpen)
-			self.EntityCurrentlyControlled = true
-		end
-		return self.KeepMenuOpen
-	end
-	self.EntityCurrentlyControlled = false
-	if oneInstance then return self.KeepMenuOpen end
-	self.Open = false
-end
-
 function imenu:SwitchState()
 	self.Open = not self.Open
 	self.Close = not self.Close
-end
-
---[[---------------------------------------------------------
-	Name: shouldDisplay()
-	Desc: true or false statements on should the menu be displayed
------------------------------------------------------------]]
-function imenu:shouldDisplay(entity)
-
-	if self.Close == true then self:Remove() return false end
-	if self.Open == false then self:Remove() return false end
-
-	return true
 end
 
 --[[---------------------------------------------------------
@@ -166,8 +136,6 @@ function imenu:Update(entity)
 		end
 	end
 
-	camera(self.DrawPos, entity)
-
 	return true
 end
 
@@ -184,85 +152,6 @@ function imenu:Remove()
 	if self.Close == true then return end
 	self.Open = false
 	self.Close = true
-end
-
-function imenu:cursor_inside(el_pos, size)
-	local el_x = el_pos.X
-	local el_y = el_pos.Y
-
-	local el_width = size.X
-	local el_height = size.Y
-
-	local mouse_x = self.Cursor.X
-	local mouse_y = self.Cursor.Y
-
-	return (mouse_x > el_x) and (mouse_x < el_x + el_width) and (mouse_y > el_y) and (mouse_y < el_y + el_height)
-end
-
---[[---------------------------------------------------------
-	Name: instance( entity, func, oneInstance, isOpen, stayedOpen )
-	Desc: For each instance call, should the instance stay or should it be recreated everytime?
------------------------------------------------------------]]
-function instance(entity, func, oneInstance, isOpen, stayedOpen)
-	stayedOpen = stayedOpen
-	isOpen = isOpen
-	if oneInstance then
-		if not stayedOpen then
-			func()
-			isOpen = true
-			stayedOpen = true
-		end
-		return isOpen, stayedOpen
-	end
-	func()
-	isOpen = true
-
-	return isOpen, stayedOpen
-end
-
---[[---------------------------------------------------------
-	Name: Camera()
-	Desc: Sets everything to a static position (disables entity movement)
------------------------------------------------------------]]
-function camera(drawPos, entity)
-	if SceneMan:ShortestDistance(drawPos, Vector(entity.Pos.X, entity.Pos.Y), SceneMan.SceneWrapsX):MagnitudeIsGreaterThan(2.0) then
-		drawPos = Vector(entity.Pos.X, entity.Pos.Y)
-	end
-
-	local ctrl = entity:GetController()
-	local states = {
-		Controller.MOVE_UP, Controller.MOVE_DOWN, Controller.BODY_JUMPSTART, Controller.BODY_JUMP, Controller.BODY_CROUCH, Controller.MOVE_LEFT, Controller.MOVE_RIGHT,
-		Controller.MOVE_IDLE, Controller.MOVE_FAST, Controller.AIM_UP, Controller.AIM_DOWN, Controller.AIM_SHARP, Controller.WEAPON_FIRE, Controller.WEAPON_RELOAD,
-		Controller.WEAPON_CHANGE_NEXT, Controller.WEAPON_CHANGE_PREV
-	}
-	for _, input in ipairs(states) do
-		ctrl:SetState(input, false)
-	end
-end
-
-function cursor(self)
-	local screen_offset = CameraMan:GetOffset(self.Screen)
-	if self.Controller:IsMouseControlled() then
-		self.Mouse = UInputMan:GetMousePos() / FrameMan.ResolutionMultiplier
-	else
-		if self.Controller:IsState(Controller.MOVE_LEFT) then
-			self.Mouse = self.Mouse + Vector(-5, 0)
-		end
-
-		if self.Controller:IsState(Controller.MOVE_RIGHT) then
-			self.Mouse = self.Mouse + Vector(5, 0)
-		end
-
-		if self.Controller:IsState(Controller.MOVE_UP) then
-			self.Mouse = self.Mouse + Vector(0, -5)
-		end
-
-		if self.Controller:IsState(Controller.MOVE_DOWN) then
-			self.Mouse = self.Mouse + Vector(0, 5)
-		end
-	end
-
-	self.Cursor = screen_offset + self.Mouse
 end
 
 return imenu:Create()
