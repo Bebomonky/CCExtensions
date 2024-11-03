@@ -64,19 +64,13 @@ function imenu:Initialize()
 	-- Don't change these
 	self.Activity = act
 	self.GameActivity = ToGameActivity(act)
-	self.Open = false --If you want your menu to be automatically opened, do it in a update function, check if it's being controlled
-	self.Close = true --It's closed by default
 	self.Cursor_Bitmap = "Data/Base.rte/GUIs/Skins/Cursor.png"
-
-	self.ForceOpen = false --Will force everything to run once
-	self.EntityCurrentlyControlled = false
-	self.OneInstance = false
-	self.KeepMenuOpen = false
-
+	self._open = false
+	self._locked = false
 	self.Player = -1
 	self.Controller = nil
-	self.EnterMenuTimer = Timer()
-	self.Mouse = UInputMan:GetMousePos() / FrameMan.ResolutionMultiplier
+	self._enterMenuTimer = Timer()
+	self.Actor = nil
 end
 
 --[[---------------------------------------------------------
