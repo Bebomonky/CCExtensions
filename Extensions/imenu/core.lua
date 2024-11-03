@@ -14,10 +14,10 @@ local panelFactory = {};
 local _base = require("Mods.Extensions.imenu.gui.imenu_Base");
 _base:Create();
 
-function imenu:RegisterGUI(control_ID, panel, base)
+function imenu:RegisterGUI(controlID, panel, base)
 
-	if (panelFactory[control_ID]) then
-		ExtensionMan.print_notice("[IMENU] Warning!", "This control_ID already exist!");
+	if (panelFactory[controlID]) then
+		ExtensionMan.print_notice("[IMENU] Warning!", "This controlID already exist!");
 		return;
 	end
 
@@ -29,28 +29,28 @@ function imenu:RegisterGUI(control_ID, panel, base)
 	if (panel.Create) then
 		panel:Create();
 	end
-	local classname = panel:Getcontrol_ID();
+	local classname = panel:GetControlID();
 	panelFactory[classname] = panel;
 end
 
 for files in LuaMan:GetFileList("Mods/Extensions/imenu/gui/") do
-	local control_ID = files:gsub("imenu_", "" ):gsub("%.lua$", "");
-	if control_ID ~= "Base" then
+	local controlID = files:gsub("imenu_", "" ):gsub("%.lua$", "");
+	if controlID ~= "Base" then
 		local file = "Mods.Extensions.imenu.gui." .. files:gsub("%.lua$", "");
 		local panel = require(file);
-		imenu:RegisterGUI(control_ID, panel, _base);
+		imenu:RegisterGUI(controlID, panel, _base);
 	end
 end
 
-function imenu:CreateGUI(control_ID, parent, name)
-	if (panelFactory[control_ID]) then
+function imenu:CreateGUI(controlID, parent, name)
+	if (panelFactory[controlID]) then
 		local Mt = {
-			__index = parent or panelFactory[control_ID]
+			__index = parent or panelFactory[controlID]
 		};
 		local panel = setmetatable({}, Mt);
 
 		--Apply all default properties
-		for k, v in pairs(panelFactory[control_ID]) do
+		for k, v in pairs(panelFactory[controlID]) do
 			panel[k] = v;
 		end
 
@@ -58,14 +58,14 @@ function imenu:CreateGUI(control_ID, parent, name)
 
 		panel:SetController(self.Controller);
 		panel:SetScreen(self.Screen);
-		panel:SetName(name or control_ID);
+		panel:SetName(name or controlID);
 		if parent ~= nil and type(parent) == "table" then
 			panel:SetParent(parent);
 		end
 
 		if ExtensionMan.EnableDebugPrinting then
 			local msg = "Successfully created panel"
-			.. "\tcontrol_ID: " .. control_ID
+			.. "\tcontrolID: " .. controlID
 			.. "\tname: " .. panel._name
 			.. "\tparent: " .. (parent and "Yes" or "No")
 			if parent ~= nil then
@@ -76,7 +76,7 @@ function imenu:CreateGUI(control_ID, parent, name)
 		return panel;
 	end
 
-	ExtensionMan.print_warn("[IMENU] " .. control_ID .. " is an invalid control_ID");
+	ExtensionMan.print_warn("[IMENU] " .. controlID .. " is an invalid controlID");
 	return nil;
 end
 
