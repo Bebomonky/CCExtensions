@@ -1,4 +1,4 @@
-local PANEL = {}
+local PANEL = {};
 
 local controlState = {
 	Controller.PRIMARY_ACTION, --0
@@ -20,155 +20,93 @@ local controlState = {
 	Controller.SCROLL_UP, --43
 	Controller.SCROLL_DOWN, --44
 	Controller.DEBUG_ONE, --45
-}
-local controlState_Pressed = {}
+};
 
-function PANEL:Initialize()
-	self._controlType = "BUTTON"
-	self._children = {}
-	self._name = ""
-	self._text = ""
-	self._textPos = Vector()
-	self._textAlignment = 1
-	self._color = 146
-	self._outlineColor = 71
-	self._outlineThickness = 2
-	self._parent = nil
-	self._visible = true
-	self._screen = -1
-	self._smallText = true
-	self._drawAfterParent = true
-	self._controller = -1
-	self.x = 0
-	self.y = 0
-	self.w = 80
-	self.h = 50
-	self.Clickable = true
-	self.IsHovered = false
+local controlState_Pressed = {};
+
+function PANEL:Create()
+	self:SetControlID("BUTTON");
+	self:SetText("Button");
+	self:SetSmallText(true);
+	self:SetSize(26, 26);
+	self.textPos_x = 0;
+	self.textPos_y = 0;
+	self._clickable = true;
+	self._isHovered = false;
 end
 
 function PANEL:SetText(str)
-	self._text = str
+	self.text = str;
 end
 
 function PANEL:GetText()
-	return self._text
+	return self.text;
 end
 
-function PANEL:Color(index)
-	self._color = index
+function PANEL:SetSmallText(isSmall)
+	self.smallText = isSmall;
 end
 
-function PANEL:OutlineColor(index)
-	self._outlineColor = index
+function PANEL:GetSmallText()
+	return self.smallText;
 end
 
-function PANEL:OutlineThickness(num)
-	self._outlineThickness = num
+function PANEL:SetTextPos(x, y)
+	self.textPos_x, self.textPos_y = x, y;
 end
 
-function PANEL:TextPos(x, y)
-	self._textPos.X, self._textPos.Y = x, y
+function PANEL:GetTextPos()
+	return Vector(self.textPos_x, self.textPos_y);
 end
 
-function PANEL:SetContentAlignment(num)
-	self._textAlignment = num
+function PANEL:IsHovered()
+	return self._isHovered == true;
 end
 
-function PANEL:Update(entity, ...)
-	if not self._visible then return end
+function PANEL:SetClickable(canClick)
+	self._clickable = canClick;
+end
 
-	if not table.IsEmpty(self._children) then
-		for i, child in ipairs(self._children) do
-			if child._drawAfterParent == false then
-				child:Update(entity, ...)
-			end
-		end
-	end
+function PANEL:GetClickable()
+	return self._clickable;
+end
 
-	local args = ...
-	local cursor_pos = Vector()
-	if args.Cursor then
-		cursor_pos = args.Cursor
-	end
+function PANEL:NextUpdate()
+	local textWidth = FrameMan:CalculateTextWidth(tostring(self.text), self.smallText);
+	local textHeight = FrameMan:CalculateTextHeight(tostring(self.text), 0, self.smallText);
 
-	local pos = Vector()
-	pos.X = self._parent and (self._parent._x + self._x) or self._x
-	pos.Y = self._parent and (self._parent._y + self._y) or self._y
-	local size = Vector(self._w, self._h)
-	local world_pos = pos + CameraMan:GetOffset(self._screen)
-	local text_pos = world_pos
+	local world_pos = self:GetPos();
+	local text_pos = world_pos + Vector((self:GetWidth() * 0.5) - textWidth * 0.5, (self:GetHeight() * 0.5) - textHeight * 0.5);
 
-	self.IsHovered = false
+	PrimitiveMan:DrawTextPrimitive(self:GetScreen(), self:GetTextPos() + text_pos, tostring(self.text), self.smallText, 0);
 
-	if cursor_inside(cursor_pos, world_pos, size) then
-		self.IsHovered = true
-	end
+	self._isHovered = self:CursorInside(world_pos, self:GetSize());
 
-	if self.Clickable and self.IsHovered then
+	if self._clickable and self._isHovered then
 		for _, input in pairs(controlState) do
 			if (self.OnPress) then
 				if self._controller:IsState(input) then
 					if not controlState_Pressed[input] then
-						self.OnPress(input)
-						controlState_Pressed[input] = true
+						self.OnPress(input);
+						controlState_Pressed[input] = true;
 					end
 				else
-					controlState_Pressed[input] = false
+					controlState_Pressed[input] = false;
 				end
 			end
 
 			if (self.OnHeld) then
-				local isHeld = false
+				local isHeld = false;
 				if self._controller:IsState(input) then
-					isHeld = true
+					isHeld = true;
 				end
 
 				if isHeld then
-					self.OnHeld(input)
+					self.OnHeld(input);
 				end
 			end
 		end
 	end
-
-	--Center
-	if self._textAlignment == 1 then text_pos = text_pos + size / 2 + Vector(0, -5) end
-
-	local thickness = self._outlineThickness
-	if thickness ~= 0 then
-		PrimitiveMan:DrawBoxFillPrimitive(self._screen,
-		world_pos - Vector(thickness, thickness),
-		world_pos + size + Vector(thickness, thickness),
-		self._outlineColor)
-	end
-
-	PrimitiveMan:DrawBoxFillPrimitive(self._screen, world_pos, world_pos + size, self._color)
-	PrimitiveMan:DrawTextPrimitive(self._screen, self._textPos + text_pos, self._text, self._smallText, self._textAlignment or 0)
-
-	if (self.Think) then
-		self.Think(entity, self._screen)
-	end
-
-	if not table.IsEmpty(self._children) then
-		for i, child in ipairs(self._children) do
-			if child._drawAfterParent == true then
-				child:Update(entity, ...)
-			end
-		end
-	end
 end
 
-function cursor_inside(cursor_pos, el_pos, size)
-	local el_x = el_pos.X
-	local el_y = el_pos.Y
-
-	local el_width = size.X
-	local el_height = size.Y
-
-	local mouse_x = cursor_pos.X
-	local mouse_y = cursor_pos.Y
-
-	return (mouse_x > el_x) and (mouse_x < el_x + el_width) and (mouse_y > el_y) and (mouse_y < el_y + el_height)
-end
-
-return PANEL
+return PANEL;

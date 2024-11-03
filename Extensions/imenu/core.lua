@@ -13,6 +13,10 @@ local panelFactory = {};
 
 local _base = require("Mods.Extensions.imenu.gui.imenu_Base");
 _base:Create();
+--Create a new gui and parents automatically
+function _base:Add(controlID, name)
+	imenu:CreateGUI(controlID, self, name);
+end
 
 function imenu:RegisterGUI(controlID, panel, base)
 
@@ -204,6 +208,7 @@ function imenu:Update()
 		end
 
 		self.Cursor = mouse;
+		_base:_SetCursor(self.Cursor);
 
 		return true;
 	end
