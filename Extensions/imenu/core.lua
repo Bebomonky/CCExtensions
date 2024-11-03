@@ -1,60 +1,83 @@
-local imenu = {}
-local core_func = require("Mods.Extensions.imenu.gui.imenu_Base")
+local imenu = {};
 
 function imenu:Create()
-	local members = {}
+	local Members = {};
 
-	setmetatable(members, self)
-	self.__index = self
+	setmetatable(Members, self);
+	self.__index = self;
 
-	return members
+	return Members;
 end
 
-local panelFactory = {}
+local panelFactory = {};
+
+local _base = require("Mods.Extensions.imenu.gui.imenu_Base");
+_base:Create();
+
+function imenu:RegisterGUI(control_ID, panel, base)
+
+	if (panelFactory[control_ID]) then
+		ExtensionMan.print_notice("[IMENU] Warning!", "This control_ID already exist!");
+		return;
+	end
+
+	local Mt = {
+		__index = base
+	};
+	setmetatable(panel, Mt);
+
+	if (panel.Create) then
+		panel:Create();
+	end
+	local classname = panel:Getcontrol_ID();
+	panelFactory[classname] = panel;
+end
+
 for files in LuaMan:GetFileList("Mods/Extensions/imenu/gui/") do
-	local file = files:gsub("imenu_", "" ):gsub("%.lua$", "")
-	if file ~= "Base" then
-		panelFactory[file] = require("Mods.Extensions.imenu.gui." .. files:gsub("%.lua$", ""))
+	local control_ID = files:gsub("imenu_", "" ):gsub("%.lua$", "");
+	if control_ID ~= "Base" then
+		local file = "Mods.Extensions.imenu.gui." .. files:gsub("%.lua$", "");
+		local panel = require(file);
+		imenu:RegisterGUI(control_ID, panel, _base);
 	end
 end
 
 function imenu:CreateGUI(control_ID, parent, name)
-	if panelFactory[control_ID] then
-		local panel = table.Copy(panelFactory[control_ID])
-		panel:Initialize()
+	if (panelFactory[control_ID]) then
+		local Mt = {
+			__index = parent or panelFactory[control_ID]
+		};
+		local panel = setmetatable({}, Mt);
 
-		--Copy functions from core_func first
-		for k, v in pairs(core_func) do
-			panel[k] = v
+		--Apply all default properties
+		for k, v in pairs(panelFactory[control_ID]) do
+			panel[k] = v;
 		end
 
-		--Pre setup
-		local activity = ActivityMan:GetActivity()
-		panel:SetController(activity:GetPlayerController(self.Player))
-		panel:SetScreen(activity:ScreenOfPlayer(self.Player))
+		panel:ClearChildren(); --!Don't remove or stack overflow!
 
-		if name ~= nil and type(name) == "string" then
-			panel:SetName(name)
-		end
+		panel:SetController(self.Controller);
+		panel:SetScreen(self.Screen);
+		panel:SetName(name or control_ID);
 		if parent ~= nil and type(parent) == "table" then
-			panel:SetParent(parent)
+			panel:SetParent(parent);
 		end
 
 		if ExtensionMan.EnableDebugPrinting then
-			local msg = "Successfully created panel,"
-			.. " control_ID: " .. control_ID
-			.. " name: " .. panel._name
-			.. " parent: " .. parent ~= nil and "Yes" or "No"
+			local msg = "Successfully created panel"
+			.. "\tcontrol_ID: " .. control_ID
+			.. "\tname: " .. panel._name
+			.. "\tparent: " .. (parent and "Yes" or "No")
 			if parent ~= nil then
-				msg = msg .. " parent control_ID: " .. parent._controlType
+				msg = msg .. "\tparent name: " .. parent._name;
 			end
-			ExtensionMan.print_debug(msg)
+			ExtensionMan.print_debug(msg);
 		end
-		return panel
+		return panel;
 	end
 
-	ExtensionMan.print_warn(control_ID .. " is an invalid controlType")
-	return nil
+	ExtensionMan.print_warn("[IMENU] " .. control_ID .. " is an invalid control_ID");
+	return nil;
 end
 
 function imenu:Initialize()
