@@ -18,6 +18,7 @@ function BASE:Create()
 	self._h = 50;
 	self._cursor = Vector();
 	self._Fcursor = Vector();
+	self._useRealMouse = true;
 end
 
 function BASE:SetOwner(entity)
