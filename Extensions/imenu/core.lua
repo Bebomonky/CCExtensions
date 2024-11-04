@@ -14,9 +14,36 @@ local panelFactory = {};
 local _base = require("Mods.Extensions.imenu.gui.imenu_Base");
 _base:Create();
 --Create a new gui and parents automatically
-function _base:Add(controlID, name)
-	local panel = imenu:CreateGUI(controlID, self, name);
-	return panel;
+function _base:Add(controlID)
+	if (panelFactory[controlID]) then
+		local panel = setmetatable({}, {__index = self});
+
+		--Apply all default properties
+		for k, v in pairs(panelFactory[controlID]) do
+			panel[k] = v;
+		end
+
+		panel:ClearChildren(); --!Don't remove or stack overflow!
+
+		panel:SetName(controlID);
+
+		panel:SetParent(self);
+
+		if ExtensionMan.EnableDebugPrinting then
+			local msg = "Successfully added panel"
+			.. "\tcontrolID: " .. controlID
+			.. "\tname: " .. panel._name
+			.. "\tparent: " .. "Yes"
+			if parent ~= nil then
+				msg = msg .. "\tparent name: " .. self._name;
+			end
+			ExtensionMan.print_debug(msg);
+		end
+		return panel;
+	end
+
+	ExtensionMan.print_warn("[IMENU] " .. controlID .. " is an invalid controlID");
+	return nil;
 end
 
 function imenu:RegisterGUI(controlID, panel, base)
@@ -54,18 +81,19 @@ function imenu:CreateGUI(controlID, parent, name)
 		};
 		local panel = setmetatable({}, Mt);
 
-		--Apply all default properties
-		for k, v in pairs(panelFactory[controlID]) do
-			panel[k] = v;
-		end
-
 		panel:ClearChildren(); --!Don't remove or stack overflow!
 
-		panel:SetController(self.Controller);
-		panel:SetScreen(self.Screen);
 		panel:SetName(name or controlID);
+
 		if parent ~= nil and type(parent) == "table" then
+			--Apply all default properties
+			for k, v in pairs(panelFactory[controlID]) do
+				panel[k] = v;
+			end
 			panel:SetParent(parent);
+		else
+			panel:SetController(self.Controller);
+			panel:SetScreen(self.Screen);
 		end
 
 		if ExtensionMan.EnableDebugPrinting then
@@ -209,7 +237,7 @@ function imenu:Update()
 		end
 
 		self.Cursor = mouse;
-		_base:_SetCursor(self.Cursor);
+		_base._cursor = self.Cursor;
 
 		return true;
 	end
