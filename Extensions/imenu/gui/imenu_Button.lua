@@ -29,8 +29,8 @@ function PANEL:Create()
 	self:SetText("Button");
 	self:SetSmallText(true);
 	self:SetSize(26, 26);
-	self.textPos_x = 0;
-	self.textPos_y = 0;
+	self._textPos_x = 0;
+	self._textPos_y = 0;
 	self._clickable = true;
 end
 
@@ -51,11 +51,11 @@ function PANEL:GetSmallText()
 end
 
 function PANEL:SetTextPos(x, y)
-	self.textPos_x, self.textPos_y = x, y;
+	self._textPos_x, self._textPos_y = x, y;
 end
 
 function PANEL:GetTextPos()
-	return Vector(self.textPos_x, self.textPos_y);
+	return Vector(self._textPos_x, self._textPos_y);
 end
 
 function PANEL:SetClickable(canClick)
@@ -77,7 +77,7 @@ function PANEL:NextUpdate()
 		PrimitiveMan:DrawTextPrimitive(self:GetScreen(), self:GetTextPos() + text_pos, tostring(self.text), self.smallText, 0);
 	end
 
-	if self._clickable and self:IsHovered() then
+	if self._clickable and self:IsHovered() and not self:GetHide() then
 		for _, input in pairs(controlState) do
 			if (self.OnPress) then
 				if self._controller:IsState(input) then
