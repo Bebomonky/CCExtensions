@@ -6,7 +6,7 @@ function PANEL:Create()
 	self:SetSmallText(true);
 	self:SetContentAlignment(0);
 	self:SetSize(0, 0);
-	self:Hide(true);
+	self:SetHide(true);
 end
 
 function PANEL:SetText(str)
