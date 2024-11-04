@@ -73,7 +73,7 @@ function PANEL:NextUpdate()
 	local world_pos = self:GetPos();
 	local text_pos = world_pos + Vector((self:GetWidth() * 0.5) - textWidth * 0.5, (self:GetHeight() * 0.5) - textHeight * 0.5);
 
-	if not self:Hide() then
+	if not self:GetHide() then
 		PrimitiveMan:DrawTextPrimitive(self:GetScreen(), self:GetTextPos() + text_pos, tostring(self.text), self.smallText, 0);
 	end
 

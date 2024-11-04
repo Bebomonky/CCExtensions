@@ -129,8 +129,12 @@ function BASE:OutlineThickness(num)
 	self._outlineThickness = num;
 end
 
-function BASE:Hide(bool)
+function BASE:SetHide(bool)
 	self._hide = bool;
+end
+
+function BASE:GetHide()
+	return self._hide;
 end
 
 function BASE:Remove()

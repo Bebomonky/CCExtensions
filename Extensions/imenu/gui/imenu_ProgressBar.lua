@@ -54,7 +54,7 @@ function PANEL:NextUpdate()
 	local size = self:GetSize();
 	local barEnd = world_pos + Vector(size.X * factor, size.Y);
 
-	if not self:Hide() then
+	if not self:GetHide() then
 		if min ~= 0 then
 			PrimitiveMan:DrawBoxFillPrimitive(self:GetScreen(), world_pos, barEnd, self.bgColor);
 		end
