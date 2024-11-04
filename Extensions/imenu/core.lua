@@ -13,10 +13,22 @@ local panelFactory = {};
 
 local _base = require("Mods.Extensions.imenu.gui.imenu_Base");
 _base:Create();
+--This is just to not have multiple thinking problems
+local blacklisted_functions = {
+	["Think"] = true;
+	["NextUpdate"] = true;
+};
+
 --Create a new gui and parents automatically
 function _base:Add(controlID)
 	if (panelFactory[controlID]) then
-		local panel = setmetatable({}, {__index = self});
+		local Mt = {
+		__index = function(Table, k)
+			if not blacklisted_functions[k] then
+				return self[k];
+			end
+		end};
+		local panel = setmetatable({}, Mt);
 
 		--Apply all default properties
 		for k, v in pairs(panelFactory[controlID]) do
@@ -77,8 +89,11 @@ end
 function imenu:CreateGUI(controlID, parent, name)
 	if (panelFactory[controlID]) then
 		local Mt = {
-			__index = parent or panelFactory[controlID]
-		};
+		__index = function(Table, k)
+			if not blacklisted_functions[k] then
+				return parent and parent[k] or panelFactory[controlID][k];
+			end
+		end};
 		local panel = setmetatable({}, Mt);
 
 		panel:ClearChildren(); --!Don't remove or stack overflow!
