@@ -17,6 +17,7 @@ function BASE:Create()
 	self._w = 80;
 	self._h = 50;
 	self._cursor = Vector();
+	self._Fcursor = Vector();
 end
 
 function BASE:SetOwner(entity)
@@ -137,6 +138,18 @@ function BASE:GetHide()
 	return self._hide;
 end
 
+function BASE:SetCursor(cursor)
+	self._Fcursor = cursor;
+end
+
+function BASE:GetCursor()
+	return self._Fcursor;
+end
+
+function BASE:UseRealCursor(bool)
+	self._useRealMouse = bool;
+end
+
 function BASE:Remove()
 	if not self._parent then
 		return;
@@ -152,14 +165,15 @@ function BASE:Remove()
 end
 
 function BASE:IsHovered()
+	local cursor = self._useRealMouse and self._cursor or self._Fcursor;
 	local x = self:GetPos().X;
 	local y = self:GetPos().Y;
 
 	local w = self:GetWidth();
 	local h = self:GetHeight();
 
-	local mouse_x = self._cursor.X;
-	local mouse_y = self._cursor.Y;
+	local mouse_x = cursor.X;
+	local mouse_y = cursor.Y;
 
 	return (mouse_x > x) and (mouse_x < x + w) and (mouse_y > y) and (mouse_y < y + h);
 end
@@ -201,14 +215,6 @@ function BASE:Update()
 	if (self.NextUpdate) then
 		self:NextUpdate();
 	end
-end
-
-function BASE:_SetCursor(cursor)
-	self._cursor = cursor;
-end
-
-function BASE:GetCursor(cursor)
-	return self._cursor;
 end
 
 return BASE;
