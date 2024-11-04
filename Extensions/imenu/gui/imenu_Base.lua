@@ -147,17 +147,17 @@ function BASE:Remove()
 	end
 end
 
-function BASE:CursorInside(el_pos, size)
-	local el_x = el_pos.X;
-	local el_y = el_pos.Y;
+function BASE:IsHovered()
+	local x = self:GetPos().X;
+	local y = self:GetPos().Y;
 
-	local el_width = size.X;
-	local el_height = size.Y;
+	local w = self:GetWidth();
+	local h = self:GetHeight();
 
 	local mouse_x = self._cursor.X;
 	local mouse_y = self._cursor.Y;
 
-	return (mouse_x > el_x) and (mouse_x < el_x + el_width) and (mouse_y > el_y) and (mouse_y < el_y + el_height);
+	return (mouse_x > x) and (mouse_x < x + w) and (mouse_y > y) and (mouse_y < y + h);
 end
 
 function BASE:Update()

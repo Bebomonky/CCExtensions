@@ -32,7 +32,6 @@ function PANEL:Create()
 	self.textPos_x = 0;
 	self.textPos_y = 0;
 	self._clickable = true;
-	self._isHovered = false;
 end
 
 function PANEL:SetText(str)
@@ -59,10 +58,6 @@ function PANEL:GetTextPos()
 	return Vector(self.textPos_x, self.textPos_y);
 end
 
-function PANEL:IsHovered()
-	return self._isHovered == true;
-end
-
 function PANEL:SetClickable(canClick)
 	self._clickable = canClick;
 end
@@ -82,9 +77,7 @@ function PANEL:NextUpdate()
 		PrimitiveMan:DrawTextPrimitive(self:GetScreen(), self:GetTextPos() + text_pos, tostring(self.text), self.smallText, 0);
 	end
 
-	self._isHovered = self:CursorInside(world_pos, self:GetSize());
-
-	if self._clickable and self._isHovered then
+	if self._clickable and self:IsHovered() then
 		for _, input in pairs(controlState) do
 			if (self.OnPress) then
 				if self._controller:IsState(input) then
