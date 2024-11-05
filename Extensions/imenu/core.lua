@@ -236,7 +236,7 @@ function imenu:Update()
 		end
 
 		if self._enterMenuTimer:IsPastSimMS(50) then
-			for _, input in pairs({Controller.PRESS_SECONDARY, Controller.ACTOR_NEXT_PREP, Controller.ACTOR_PREV_PREP}) do
+			for _, input in pairs({Controller.SECONDARY_ACTION, Controller.ACTOR_NEXT_PREP, Controller.ACTOR_PREV_PREP}) do
 				if self.Controller:IsState(input) then
 					self:Remove();
 					break;
