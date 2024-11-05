@@ -16,7 +16,6 @@ _base:Create();
 --This is just to not have multiple thinking problems
 local blacklisted_functions = {
 	["Think"] = true;
-	["NextUpdate"] = true;
 };
 
 --Create a new gui and parents automatically
