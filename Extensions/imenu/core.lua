@@ -226,6 +226,12 @@ function imenu:Update()
 			return false;
 		end
 
+		local actor = self.Activity:GetControlledActor(self.Player)
+		if self.Actor.UniqueID ~= actor.UniqueID then
+			self:Remove();
+			return false;
+		end
+
 		local states = {
 			Controller.MOVE_UP, Controller.MOVE_DOWN, Controller.BODY_JUMPSTART, Controller.BODY_JUMP, Controller.MOVE_LEFT,
 			Controller.MOVE_RIGHT, Controller.MOVE_FAST, Controller.AIM_UP, Controller.AIM_DOWN, Controller.AIM_SHARP
