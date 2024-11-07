@@ -19,7 +19,6 @@ function BASE:Create()
 	self._cursor = Vector();
 	self._Fcursor = Vector();
 	self._useRealMouse = true;
-	self._drawType = 0;
 end
 
 function BASE:SetOwner(entity)
@@ -66,14 +65,6 @@ end
 
 function BASE:DrawAfterParent(bool)
 	self._drawAfterParent = bool;
-end
-
-function BASE:SetDrawType(num)
-	self._drawType = num;
-end
-
-function BASE:GetDrawType()
-	return self._drawType;
 end
 
 function BASE:SetPos(x, y)
