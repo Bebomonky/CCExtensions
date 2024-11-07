@@ -10,33 +10,49 @@ function imenu:Create()
 end
 
 local panelFactory = {};
+local baseclass = {};
+
+function getBaseClass(name)
+	return baseclass[name];
+end
+
+function setBaseClass(name, tab)
+	if (not baseclass[name]) then
+		baseclass[name] = tab;
+	else
+		table.Merge(baseclass[name], tab);
+		setmetatable(baseclass[name], getmetatable(tab));
+	end
+end
+
+function errorMsg(msg1, msg2)
+	error("[IMENU] '" .. "\xBF " .. msg1 .. " \xBE" .. "' " .. msg2, 3);
+end
 
 local _base = require("Mods.Extensions.imenu.gui.imenu_Base");
 _base:Create();
---This is just to not have multiple thinking problems
-local blacklisted_functions = {
-	["Think"] = true;
-};
+setBaseClass("BASE", _base);
 
 --Create a new gui and parents automatically
 function _base:Add(controlID)
 	if (panelFactory[controlID]) then
-		local Mt = {
-		__index = function(Table, k)
-			if not blacklisted_functions[k] then
-				return self[k];
-			end
-		end};
-		local panel = setmetatable({}, Mt);
+		local Mt = panelFactory[controlID];
+		local panel = self:Add(Mt.Base);
+		if (not panel) then
+			errorMsg(Mt.Base, "is an invalid base");
+		end
+		table.Merge(panel, Mt);
 
-		--Apply all default properties
-		for k, v in pairs(panelFactory[controlID]) do
-			panel[k] = v;
+		if (panel.Create) then
+			panel:Create();
 		end
 
-		panel:ClearChildren(); --!Don't remove or stack overflow!
+		panel:ClearChildren(); --! Don't remove or chaos!
 
 		panel:SetName(controlID);
+
+		panel:SetController(self:GetController());
+		panel:SetScreen(self:GetScreen());
 
 		panel:SetParent(self);
 
@@ -53,8 +69,16 @@ function _base:Add(controlID)
 		return panel;
 	end
 
-	ExtensionMan.print_warn("[IMENU] " .. controlID .. " is an invalid controlID");
-	return nil;
+	local Mt = getBaseClass(controlID);
+	if (not Mt) then
+		errorMsg(controlID, "is an invalid controlID");
+	end
+	local panel = {};
+	table.Merge(panel, Mt);
+	panel:SetController(self:GetController());
+	panel:SetScreen(self:GetScreen());
+
+	return panel;
 end
 
 function imenu:RegisterGUI(controlID, panel, base)
@@ -64,50 +88,52 @@ function imenu:RegisterGUI(controlID, panel, base)
 		return;
 	end
 
+	panel.Base = base or "BASE";
+	panel.Create = panel.Create or function() end;
+
+	panelFactory[controlID] = panel;
+	setBaseClass(controlID, panel);
+
 	local Mt = {
-		__index = base
-	};
+	__index = function(Table, k)
+		if (panelFactory[panel.Base] and panelFactory[panel.Base][k]) then
+			return baseclass[k];
+		end
+	end};
+
 	setmetatable(panel, Mt);
 
-	if (panel.Create) then
-		panel:Create();
-	end
-	local classname = panel:GetControlID();
-	panelFactory[classname] = panel;
+	return panel;
 end
 
-for files in LuaMan:GetFileList("Mods/Extensions/imenu/gui/") do
-	local controlID = files:gsub("imenu_", "" ):gsub("%.lua$", "");
-	if controlID ~= "Base" then
-		local file = "Mods.Extensions.imenu.gui." .. files:gsub("%.lua$", "");
-		local panel = require(file);
-		imenu:RegisterGUI(controlID, panel, _base);
-	end
-end
+local path = "Mods/Extensions/imenu/gui/";
+imenu:RegisterGUI("COLLECTIONBOX", require(path .. "imenu_CollectionBox"), "BASE");
+imenu:RegisterGUI("BUTTON", require(path .. "imenu_Button"), "BASE");
+imenu:RegisterGUI("LABEL", require(path .. "imenu_Label"), "BASE");
+imenu:RegisterGUI("PROGRESSBAR", require(path .. "imenu_ProgressBar"), "BASE");
 
 function imenu:CreateGUI(controlID, parent, name)
 	if (panelFactory[controlID]) then
-		local Mt = {
-		__index = function(Table, k)
-			if not blacklisted_functions[k] then
-				return parent and parent[k] or panelFactory[controlID][k];
-			end
-		end};
-		local panel = setmetatable({}, Mt);
+		local Mt = panelFactory[controlID];
+		local panel = self:CreateGUI(Mt.Base, parent, name or controlID);
+		if (not panel) then
+			errorMsg(Mt.Base, "is an invalid base");
+		end
 
-		panel:ClearChildren(); --!Don't remove or stack overflow!
+		table.Merge(panel, Mt);
+
+		if (panel.Create) then
+			panel:Create();
+		end
+
+		panel:ClearChildren(); --! Don't remove or chaos!
 
 		panel:SetName(name or controlID);
 
+		panel:SetController(self.Controller);
+		panel:SetScreen(self.Screen);
 		if parent ~= nil and type(parent) == "table" then
-			--Apply all default properties
-			for k, v in pairs(panelFactory[controlID]) do
-				panel[k] = v;
-			end
 			panel:SetParent(parent);
-		else
-			panel:SetController(self.Controller);
-			panel:SetScreen(self.Screen);
 		end
 
 		if ExtensionMan.EnableDebugPrinting then
@@ -123,8 +149,16 @@ function imenu:CreateGUI(controlID, parent, name)
 		return panel;
 	end
 
-	ExtensionMan.print_warn("[IMENU] " .. controlID .. " is an invalid controlID");
-	return nil;
+	local Mt = getBaseClass(controlID);
+	if (not Mt) then
+		errorMsg(controlID, "is an invalid controlID");
+	end
+	local panel = {};
+	table.Merge(panel, Mt);
+	panel:SetController(self.Controller);
+	panel:SetScreen(self.Screen);
+
+	return panel;
 end
 
 function imenu:Initialize()
@@ -257,7 +291,6 @@ function imenu:Update()
 		end
 
 		self.Cursor = mouse;
-		_base._cursor = self.Cursor;
 
 		return true;
 	end
