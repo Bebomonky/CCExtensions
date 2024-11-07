@@ -171,8 +171,8 @@ end
 
 function BASE:IsHovered()
 	local cursor = self._useRealMouse and self._cursor or self._Fcursor;
-	local x = self:GetPos().X;
-	local y = self:GetPos().Y;
+	local x = self:GetAbsolutePos().X;
+	local y = self:GetAbsolutePos().Y;
 
 	local w = self:GetWidth();
 	local h = self:GetHeight();
@@ -193,7 +193,7 @@ function BASE:Update()
 		end
 	end
 
-	local world_pos = self:GetPos();
+	local world_pos = self:GetAbsolutePos();
 
 	if not self._hide then
 		local thickness = self._outlineThickness;

@@ -82,7 +82,7 @@ function PANEL:Update()
 		self:SetPos(self:GetWidth() - (textWidth - 1), h);
 	end
 
-	local world_pos = self:GetPos();
+	local world_pos = self:GetAbsolutePos();
 
 	PrimitiveMan:DrawTextPrimitive(self:GetScreen(), world_pos, tostring(self.text), self.smallText, 0);
 end

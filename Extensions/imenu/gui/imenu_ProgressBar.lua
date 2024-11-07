@@ -48,7 +48,7 @@ function PANEL:GetFraction()
 end
 
 function PANEL:NextUpdate()
-	local world_pos = self:GetPos();
+	local world_pos = self:GetAbsolutePos();
 
 	local factor = math.min(min, max);
 	local size = self:GetSize();
