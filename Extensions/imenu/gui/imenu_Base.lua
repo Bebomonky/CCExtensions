@@ -75,7 +75,11 @@ function BASE:SetPos(x, y)
 	end
 end
 
-function BASE:GetPos()
+function BASE:GetRelativePos()
+	return Vector(self._x, self._y);
+end
+
+function BASE:GetAbsolutePos()
 	return Vector(self._x, self._y) + CameraMan:GetOffset(self._screen);
 end
 
