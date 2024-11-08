@@ -291,9 +291,7 @@ function imenu:Update()
 
 		local offset = CameraMan:GetOffset(self.Player);
 		local mouse = Vector();
-		if self.Controller and self.Controller:IsMouseControlled() then
-			mouse = offset + (UInputMan:GetMousePos() / FrameMan.ResolutionMultiplier);
-		end
+		mouse = offset + (UInputMan:GetMousePos() / FrameMan.ResolutionMultiplier);
 
 		imenu.Cursor = mouse;
 
