@@ -1,5 +1,5 @@
 local imenu = {};
-imenu.Cursor = {};
+imenu.Cursor = Vector();
 
 function imenu:Create()
 	local Members = {};
@@ -302,9 +302,7 @@ function imenu:Update()
 end
 
 function imenu:DrawCursor()
-	if self.Controller and self.Controller:IsMouseControlled() then
-		PrimitiveMan:DrawBitmapPrimitive(self.Screen, imenu.Cursor + Vector(5, 5), self.Cursor_Bitmap, 0);
-	end
+	PrimitiveMan:DrawBitmapPrimitive(self.Screen, imenu.Cursor + Vector(5, 5), self.Cursor_Bitmap, 0);
 end
 
 --[[---------------------------------------------------------
