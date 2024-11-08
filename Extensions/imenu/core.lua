@@ -1,4 +1,5 @@
 local imenu = {};
+imenu.Cursor = {};
 
 function imenu:Create()
 	local Members = {};
@@ -26,7 +27,7 @@ function setBaseClass(name, tab)
 end
 
 function errorMsg(msg1, msg2)
-	error("[IMENU] '" .. "\xBF " .. msg1 .. " \xBE" .. "' " .. msg2, 3);
+	error("[IMENU]" .. " \xBF " .. msg1 .. " \xBE  " .. msg2, 3);
 end
 
 local _base = require("Mods.Extensions.imenu.gui.imenu_Base");
@@ -79,6 +80,10 @@ function _base:Add(controlID)
 	panel:SetScreen(self:GetScreen());
 
 	return panel;
+end
+
+function _base:GetRealCursor()
+	self._cursor = imenu.Cursor;
 end
 
 function imenu:RegisterGUI(controlID, panel, base)
@@ -290,7 +295,7 @@ function imenu:Update()
 			mouse = offset + (UInputMan:GetMousePos() / FrameMan.ResolutionMultiplier);
 		end
 
-		self.Cursor = mouse;
+		imenu.Cursor = mouse;
 
 		return true;
 	end
@@ -298,7 +303,7 @@ end
 
 function imenu:DrawCursor()
 	if self.Controller and self.Controller:IsMouseControlled() then
-		PrimitiveMan:DrawBitmapPrimitive(self.Screen, self.Cursor + Vector(5, 5), self.Cursor_Bitmap, 0);
+		PrimitiveMan:DrawBitmapPrimitive(self.Screen, imenu.Cursor + Vector(5, 5), self.Cursor_Bitmap, 0);
 	end
 end
 

@@ -193,13 +193,7 @@ function BASE:Update()
 		end
 	end
 
-	local offset = CameraMan:GetOffset(self._controller.Player);
-	local mouse = Vector();
-	if self._useRealMouse and self._controller:IsMouseControlled() then
-		mouse = offset + (UInputMan:GetMousePos() / FrameMan.ResolutionMultiplier);
-	end
-
-	self._cursor = mouse;
+	self:GetRealCursor();
 
 	local world_pos = self:GetAbsolutePos();
 
