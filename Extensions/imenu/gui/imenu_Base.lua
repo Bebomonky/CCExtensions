@@ -196,16 +196,19 @@ function BASE:Update()
 	self:GetRealCursor();
 
 	local world_pos = self:GetAbsolutePos();
+	local size = self:GetSize() - Vector(1, 1);
 
 	if not self._hide then
 		local thickness = self._outlineThickness;
-		if thickness ~= 0 then
+		if thickness ~= 0 and math.min(size.X, size.Y) >= 1 then
 			PrimitiveMan:DrawBoxFillPrimitive(self._screen,
 			world_pos - Vector(thickness, thickness),
-			world_pos + self:GetSize() + Vector(thickness, thickness),
+			world_pos + size + Vector(thickness, thickness),
 			self._outlineColor);
 		end
-		PrimitiveMan:DrawBoxFillPrimitive(self._screen, world_pos, world_pos + self:GetSize(), self._color);
+		if math.min(size.X, size.Y) >= 0 then
+			PrimitiveMan:DrawBoxFillPrimitive(self._screen, world_pos, world_pos + size, self._color);
+		end
 	end
 
 	for i = 1, #self._children do
