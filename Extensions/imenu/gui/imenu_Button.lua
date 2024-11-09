@@ -77,7 +77,7 @@ function PANEL:NextUpdate()
 		PrimitiveMan:DrawTextPrimitive(self:GetScreen(), self:GetTextPos() + text_pos, tostring(self.text), self.smallText, 0);
 	end
 
-	if self._clickable and self:IsHovered() and not self:GetHide() then
+	if self._clickable and self:IsHovered() then
 		for _, input in pairs(controlState) do
 			if (self.OnPress) then
 				if self._controller:IsState(input) then
