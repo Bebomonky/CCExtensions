@@ -34,57 +34,57 @@ function PANEL:Update()
 
 	local textWidth = FrameMan:CalculateTextWidth(tostring(self.text), self.smallText);
 	local textHeight = FrameMan:CalculateTextHeight(tostring(self.text), 0, self.smallText);
-	local test_pos = Vector();
+	local text_pos = Vector();
 	if self.textAlignment == 1 then --bottom-left
 
 		local h = self.smallText and textHeight - 3 or textHeight - 4;
-		test_pos = Vector(0, self:GetHeight() - h);
+		text_pos = Vector(0, self:GetHeight() - h);
 
 	elseif self.textAlignment == 2 then --bottom-center
 
 		local h = self.smallText and textHeight - 3 or textHeight - 4;
 		local w = self.smallText and textWidth or textWidth;
-		test_pos = Vector((self:GetWidth() * 0.5) - w * 0.5, self:GetHeight() - h);
+		text_pos = Vector((self:GetWidth() * 0.5) - w * 0.5, self:GetHeight() - h);
 
 	elseif self.textAlignment == 3 then --bottom-right
 
 		local h = self.smallText and textHeight - 3 or textHeight - 4;
-		test_pos = Vector(self:GetWidth() - (textWidth - 1), self:GetHeight() - h);
+		text_pos = Vector(self:GetWidth() - (textWidth - 1), self:GetHeight() - h);
 
 	elseif self.textAlignment == 4 then --middle-left
 
 		local h = self.smallText and textHeight - 1 or textHeight;
-		test_pos = Vector(0, (self:GetHeight() * 0.5) - h * 0.5);
+		text_pos = Vector(0, (self:GetHeight() * 0.5) - h * 0.5);
 
 	elseif self.textAlignment == 5 then --center
 
-		test_pos = Vector((self:GetWidth() * 0.5) - textWidth * 0.5, (self:GetHeight() * 0.5) - textHeight * 0.5);
+		text_pos = Vector((self:GetWidth() * 0.5) - textWidth * 0.5, (self:GetHeight() * 0.5) - textHeight * 0.5);
 
 	elseif self.textAlignment == 6 then --middle-right
 
 		local h = self.smallText and textHeight - 1 or textHeight;
 		local w = self.smallText and textWidth - 1 or textWidth - 3;
-		test_pos = Vector(self:GetWidth() - w, (self:GetHeight() * 0.5) - h * 0.5);
+		text_pos = Vector(self:GetWidth() - w, (self:GetHeight() * 0.5) - h * 0.5);
 
 	elseif self.textAlignment == 7 then --top-left
 
 		local h = self.smallText and - 2 or - 3;
-		test_pos = Vector(0, h);
+		text_pos = Vector(0, h);
 
 	elseif self.textAlignment == 8 then --top-center
 
 		local h = self.smallText and -2 or -4;
-		test_pos = Vector((self:GetWidth() * 0.5) - textWidth * 0.5, h);
+		text_pos = Vector((self:GetWidth() * 0.5) - textWidth * 0.5, h);
 
 	elseif self.textAlignment == 9 then --top-right
 
 		local h = self.smallText and -2 or -4;
-		test_pos = Vector(self:GetWidth() - (textWidth - 1), h);
+		text_pos = Vector(self:GetWidth() - (textWidth - 1), h);
 	end
 
 	local world_pos = self:GetAbsolutePos();
 
-	PrimitiveMan:DrawTextPrimitive(self:GetScreen(), world_pos + test_pos, tostring(self.text), self.smallText, 0);
+	PrimitiveMan:DrawTextPrimitive(self:GetScreen(), world_pos + text_pos, tostring(self.text), self.smallText, 0);
 end
 
 return PANEL;
