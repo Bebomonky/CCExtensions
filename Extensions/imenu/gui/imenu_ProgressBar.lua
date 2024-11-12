@@ -68,7 +68,7 @@ function PANEL:NextUpdate()
 		if min >= max then
 			completed = true;
 			if (self.OnComplete) then
-				self.OnComplete();
+				self:OnComplete();
 				min = 0;
 				completed = false;
 			end
