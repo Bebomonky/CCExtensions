@@ -63,8 +63,8 @@ function PANEL:NextUpdate()
 		PrimitiveMan:DrawTextPrimitive(self:GetScreen(), world_pos, self.text, self.smallText, 0);
 	end
 
-	if self.completed == false then
-		if self.min >= self._max then
+	if self._completed == false then
+		if self._min >= self._max then
 			self._completed = true;
 			if (self.OnComplete) then
 				self:OnComplete();
