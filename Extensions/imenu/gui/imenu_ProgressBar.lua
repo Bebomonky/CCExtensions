@@ -52,11 +52,13 @@ function PANEL:NextUpdate()
 
 	local factor = math.min(min, max);
 	local size = self:GetSize();
-	local barEnd = world_pos + Vector(size.X * factor, size.Y);
+	local barEnd = world_pos + Vector(size.X * factor, size.Y) - Vector(1, 1);
 
 	if not self:GetHide() then
 		if min ~= 0 then
-			PrimitiveMan:DrawBoxFillPrimitive(self:GetScreen(), world_pos, barEnd, self.bgColor);
+			if math.min(size.X, size.Y) >= 0 then
+				PrimitiveMan:DrawBoxFillPrimitive(self:GetScreen(), world_pos, barEnd, self.bgColor);
+			end
 		end
 
 		PrimitiveMan:DrawTextPrimitive(self:GetScreen(), world_pos, self.text, self.smallText, 0);
