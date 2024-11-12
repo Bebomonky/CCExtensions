@@ -71,10 +71,6 @@ function PANEL:NextUpdate()
 				completed = false;
 			end
 		end
-
-		if (self.OnProgress) then
-			self.OnProgress();
-		end
 	end
 end
 
