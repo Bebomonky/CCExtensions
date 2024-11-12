@@ -188,8 +188,10 @@ function BASE:Update()
 
 	for i = 1, #self._children do
 		local child = self._children[i];
-		if child._drawAfterParent == false then
-			child:Update();
+		if child then
+			if child._drawAfterParent == false then
+				child:Update();
+			end
 		end
 	end
 
@@ -213,8 +215,10 @@ function BASE:Update()
 
 	for i = 1, #self._children do
 		local child = self._children[i];
-		if child._drawAfterParent == true then
-			child:Update();
+		if child then
+			if child._drawAfterParent == true then
+				child:Update();
+			end
 		end
 	end
 
