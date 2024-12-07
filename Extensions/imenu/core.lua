@@ -221,16 +221,22 @@ end
 -----------------------------------------------------------]]
 function imenu:SetPlayerMenu(player)
 	if player ~= -1 then
-		self.Player = player;
+		if (self.Activity:GetViewState(self.Player) ~= Activity.DEATHWATCH and
+			self.Activity:GetViewState(self.Player) ~= Activity.ACTORSELECT and
+			self.Activity:GetViewState(self.Player) ~= Activity.AIGOTOPOINT) then
+				self.Player = player;
+				self.Controller = self.Activity:GetPlayerController(self.Player);
+				self.Screen = self.Activity:ScreenOfPlayer(self.Player);
+				if self.Controller:IsKeyboardOnlyControlled() or self.Controller:IsGamepadControlled() then
+					imenu.Cursors[self.Player] = Vector(FrameMan.PlayerScreenWidth, FrameMan.PlayerScreenHeight) * 0.5;
+				else
+					imenu.Cursors[self.Player] = Vector();
+				end
+			return true;
+		end
 	end
 
-	if (self.Activity:GetViewState(self.Player) ~= Activity.DEATHWATCH and
-	self.Activity:GetViewState(self.Player) ~= Activity.ACTORSELECT and
-	self.Activity:GetViewState(self.Player) ~= Activity.AIGOTOPOINT) then
-		self.Controller = self.Activity:GetPlayerController(self.Player);
-		self.Screen = self.Activity:ScreenOfPlayer(self.Player);
-		return true;
-	end
+	return false;
 end
 
 function imenu:SwitchState()
