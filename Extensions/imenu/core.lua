@@ -267,7 +267,12 @@ function imenu:Update()
 			return false;
 		end
 
-		local actor = self.Activity:GetControlledActor(self.Player)
+		local actor = self.Activity:GetControlledActor(self.Player);
+		if not actor then
+			self:Remove();
+			return false;
+		end
+
 		if self.Actor.UniqueID ~= actor.UniqueID then
 			self:Remove();
 			return false;
