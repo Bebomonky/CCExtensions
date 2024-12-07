@@ -1,5 +1,5 @@
 local imenu = {};
-imenu.Cursor = Vector();
+imenu.Cursors = {};
 
 function imenu:Create()
 	local Members = {};
@@ -82,8 +82,8 @@ function _base:Add(controlID)
 	return panel;
 end
 
-function _base:GetRealCursor()
-	self._cursor = imenu.Cursor;
+function _base:GetCursor()
+	self._cursor = imenu.Cursors[self:GetController().Player] + CameraMan:GetOffset(self:GetScreen());
 end
 
 function imenu:RegisterGUI(controlID, panel, base)
@@ -289,18 +289,38 @@ function imenu:Update()
 			end
 		end
 
-		local offset = CameraMan:GetOffset(self.Player);
-		local mouse = Vector();
-		mouse = offset + (UInputMan:GetMousePos() / FrameMan.ResolutionMultiplier);
+		if self.Controller then
+			if self.Controller:IsMouseControlled() then
+				imenu.Cursors[self.Player] = UInputMan:GetMousePos() / FrameMan.ResolutionMultiplier;
+			else
+				if self.Controller:IsKeyboardOnlyControlled() then
+					if self.Controller:IsState(Controller.MOVE_LEFT) then imenu.Cursors[self.Player] = imenu.Cursors[self.Player] - Vector(5, 0); end
+					if self.Controller:IsState(Controller.MOVE_RIGHT) then imenu.Cursors[self.Player] = imenu.Cursors[self.Player] + Vector(5, 0); end
+					if self.Controller:IsState(Controller.MOVE_UP) then imenu.Cursors[self.Player] = imenu.Cursors[self.Player] - Vector(0, 5); end
+					if self.Controller:IsState(Controller.MOVE_DOWN) then imenu.Cursors[self.Player] = imenu.Cursors[self.Player] + Vector(0, 5); end
+				elseif self.Controller:IsGamepadControlled() then
+					local speed = 7;
+					imenu.Cursors[self.Player] = imenu.Cursors[self.Player] + self.Controller.AnalogMove * speed;
+				end
 
-		imenu.Cursor = mouse;
+				if imenu.Cursors[self.Player].X < 0 then
+					imenu.Cursors[self.Player].X = 0;
+				elseif imenu.Cursors[self.Player].Y < 0 then
+					imenu.Cursors[self.Player].Y = 0;
+				elseif imenu.Cursors[self.Player].Y > FrameMan.PlayerScreenHeight then
+					imenu.Cursors[self.Player].Y = FrameMan.PlayerScreenHeight - 10;
+				elseif imenu.Cursors[self.Player].X > FrameMan.PlayerScreenWidth then
+					imenu.Cursors[self.Player].X = FrameMan.PlayerScreenWidth - 10;
+				end
+			end
+		end
 
 		return true;
 	end
 end
 
 function imenu:DrawCursor()
-	PrimitiveMan:DrawBitmapPrimitive(self.Screen, imenu.Cursor + Vector(5, 5), self.Cursor_Bitmap, 0);
+	PrimitiveMan:DrawBitmapPrimitive(self.Screen, CameraMan:GetOffset(self.Screen) + imenu.Cursors[self.Player] + Vector(5, 5), self.Cursor_Bitmap, 0);
 end
 
 --[[---------------------------------------------------------
