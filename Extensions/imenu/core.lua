@@ -251,10 +251,6 @@ function imenu:SetActor(entity)
 	self.Actor = entity;
 end
 
-function imenu:ValidPlayer()
-	return self.Player ~= -1;
-end
-
 --[[---------------------------------------------------------
 	Name: Update()
 	Desc: returns if the menu should be updating based on various conditions
